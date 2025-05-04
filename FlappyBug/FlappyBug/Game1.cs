@@ -27,6 +27,7 @@ namespace FlappyBug
         private readonly int uitersteYPositieWaarde;
 
         private int score = 0;
+        private bool _scoreUpdated = false;
 
         public SpriteFont Font {get; private set;}
 
@@ -179,10 +180,20 @@ namespace FlappyBug
                 }
             }
         }
-
         private void verwerkScore(){
-            if(bugpixelPositie.X + _bugpixel.Width > _buisPosities[0].X //b => b.X < -_buis.Width          ){
-                score++;
+            if (_buisPosities.Count > 0)
+            {
+                if (bugpixelPositie.X > _buisPosities[0].X + _buis.Width && !_scoreUpdated)
+                {
+                    score += 1; // Increment score by 1
+                    _scoreUpdated = true; // Set the flag to true to prevent multiple increments
+                }
+
+                // Reset the flag when the bug is no longer past the pipe
+                if (bugpixelPositie.X <= _buisPosities[0].X + _buis.Width)
+                {
+                    _scoreUpdated = false;
+                }
             }
         }
     }
