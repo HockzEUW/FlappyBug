@@ -1,0 +1,6 @@
+namespace FlappyBug.States;
+
+public class PlayingState : AbstractState 
+{
+
+}

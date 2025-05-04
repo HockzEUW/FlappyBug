@@ -1,0 +1,11 @@
+namespace FlappyBug.States;
+
+public abstract class AbstractState {
+    protected Game1 game;
+    protected AbstractState(Game1 game) {
+        this.game = game;
+    }
+
+    public abstract void Update(GameTime gameTime);
+    public abstract void Draw(SpriteBatch spriteBatch);
+}

@@ -15,7 +15,7 @@ namespace FlappyBug
         private Texture2D _bugpixel;
         private Texture2D _motherboardBackground;
         private Texture2D _buis;
-        private Vector2 achtergrondPositie = Vector2.Zero;        
+        private Vector2 achtergrondPositie = Vector2.Zero;
         private Vector2 achtergrond2Positie = new Vector2(1792, 0);
         private const int bewegingsSnelheid = 5;
         private Vector2 bugpixelPositie = Vector2.Zero;
@@ -26,10 +26,14 @@ namespace FlappyBug
         private TimeSpan _momentLaatsteBuisAangemaakt;
         private readonly int uitersteYPositieWaarde;
 
+        private TimeSpan tijdVerstreken = TimeSpan.Zero; //lokale timer die alleen telt wanneer game niet gepauzeerd is
+
         private int score = 0;
         private bool _scoreUpdated = false;
 
-        public SpriteFont Font {get; private set;}
+        private bool _isGepauzeerd = false;
+
+        public SpriteFont Font { get; private set; }
 
         public Game1()
         {
@@ -58,10 +62,15 @@ namespace FlappyBug
 
         protected override void Update(GameTime gameTime)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            if (!_isGepauzeerd)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+                {
+                    _isGepauzeerd = true; // pauzeer
+                }
+                tijdVerstreken += gameTime.ElapsedGameTime;
 
-            if (bugpixelPositie == Vector2.Zero)
+                if (bugpixelPositie == Vector2.Zero)
             {
                 bugpixelPositie = new Vector2(Graphics.PreferredBackBufferWidth / 4, Graphics.PreferredBackBufferHeight / 2 - _bugpixel.Height);
             }
@@ -70,14 +79,16 @@ namespace FlappyBug
 
             achtergrond2Positie.X -= bewegingsSnelheid;
 
-            if(achtergrondPositie.X < -_motherboardBackground.Width ){
+            if (achtergrondPositie.X < -_motherboardBackground.Width)
+            {
                 achtergrondPositie.X = _motherboardBackground.Width;
             }
 
-            if(achtergrond2Positie.X < -_motherboardBackground.Width ){
+            if (achtergrond2Positie.X < -_motherboardBackground.Width)
+            {
                 achtergrond2Positie.X = _motherboardBackground.Width;
             }
-            
+
             // Controleer of we springen als de spatiebalk ingedrukt is
             if (Keyboard.GetState().IsKeyDown(Keys.Space) && !isSpatiebarIngedrukt && (bugpixelPositie.Y > _bugpixel.Height))
             {
@@ -94,7 +105,8 @@ namespace FlappyBug
                 isSpatiebarIngedrukt = true;
             }
 
-            if(Keyboard.GetState().IsKeyUp(Keys.Space) && isSpatiebarIngedrukt){
+            if (Keyboard.GetState().IsKeyUp(Keys.Space) && isSpatiebarIngedrukt)
+            {
                 isSpatiebarIngedrukt = false;
             }
 
@@ -114,20 +126,31 @@ namespace FlappyBug
                 verticalVelocity = 0f;  // Stop met vallen als de bugpixel de onderkant bereikt
             }
 
-            buizenController(gameTime);
+                BuizenController(gameTime);
 
+            }
+            else
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                {
+                    _isGepauzeerd = false; // continue
+                }
+            }
+            
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            
             GraphicsDevice.Clear(Color.Black);
             SpriteBatch.Begin();
             SpriteBatch.Draw(_motherboardBackground, achtergrond2Positie, Color.White);
             SpriteBatch.Draw(_motherboardBackground, achtergrondPositie, Color.White);
             SpriteBatch.Draw(_bugpixel, bugpixelPositie, Color.White);
 
-            foreach(var buisPositie in _buisPosities){
+            foreach (var buisPositie in _buisPosities)
+            {
                 SpriteBatch.Draw(_buis, buisPositie, Color.White);
             }
             SpriteBatch.DrawString(Font, score.ToString(), Vector2.Zero, Color.Red);
@@ -136,37 +159,45 @@ namespace FlappyBug
         }
 
 
-        private void buizenController(GameTime gt){
-            if((gt.TotalGameTime - _momentLaatsteBuisAangemaakt).TotalSeconds > 1.5){
-                maakBuizen(gt);
+        private void BuizenController(GameTime gt)
+        {
+            if ((tijdVerstreken -_momentLaatsteBuisAangemaakt).TotalSeconds > 1.5)
+            {
+                MaakBuizen(gt);
             }
-            verplaatsBuizen();
-            verwerkBotsing();
-            verwerkScore();
+            VerplaatsBuizen();
+            VerwerkBotsing();
+            VerwerkScore();
             _buisPosities.RemoveAll(b => b.X < -_buis.Width);
         }
 
-        private void maakBuizen(GameTime gt){
+        private void MaakBuizen(GameTime gt)
+        {
             Random rnd = new();
             Vector2 nieuweBuisPositie = new Vector2(
                 Graphics.PreferredBackBufferWidth,
                 (-_buis.Height / 2) + (Graphics.PreferredBackBufferHeight / 2) + rnd.Next(-uitersteYPositieWaarde, uitersteYPositieWaarde) //buis komt eerst midden op het scherm en verplaatst zich dan naar boven of onder
             );
             _buisPosities.Add(nieuweBuisPositie);
-            _momentLaatsteBuisAangemaakt = gt.TotalGameTime;
+            _momentLaatsteBuisAangemaakt = tijdVerstreken;
         }
-        private void verplaatsBuizen(){
-            for(int i = 0; i < _buisPosities.Count; i++){
-                _buisPosities[i] = _buisPosities[i] with {X = _buisPosities[i].X - bewegingsSnelheid};
+        private void VerplaatsBuizen()
+        {
+            for (int i = 0; i < _buisPosities.Count; i++)
+            {
+                _buisPosities[i] = _buisPosities[i] with { X = _buisPosities[i].X - bewegingsSnelheid };
             }
         }
-        private void verwerkBotsing(){
+        private void VerwerkBotsing()
+        {
+            
             Rectangle bugRechthoek = new(
-                (int)bugpixelPositie.X, (int) bugpixelPositie.Y,
+                (int)bugpixelPositie.X, (int)bugpixelPositie.Y,
                 _bugpixel.Width, _bugpixel.Height
             );
 
-            for(int i = 0; i < _buisPosities.Count; i++){
+            for (int i = 0; i < _buisPosities.Count; i++)
+            {
                 Rectangle buisRechthoekBovenkant = new(
                     (int)_buisPosities[i].X, (int)_buisPosities[i].Y,
                     _buis.Width, _buis.Height / 2 - 90
@@ -174,27 +205,31 @@ namespace FlappyBug
                 Rectangle buisRechthoekOnderkant = new(
                     (int)_buisPosities[i].X, (int)_buisPosities[i].Y + _buis.Height / 2 + 90,
                     _buis.Width, _buis.Height
-                ); 
-                if(bugRechthoek.Intersects(buisRechthoekBovenkant) || bugRechthoek.Intersects(buisRechthoekOnderkant)){
+                );
+                if (bugRechthoek.Intersects(buisRechthoekBovenkant) || bugRechthoek.Intersects(buisRechthoekOnderkant))
+                {
                     Exit();
                 }
             }
         }
-        private void verwerkScore(){
+        private void VerwerkScore()
+        {
             if (_buisPosities.Count > 0)
             {
                 if (bugpixelPositie.X > _buisPosities[0].X + _buis.Width && !_scoreUpdated)
                 {
-                    score += 1; // Increment score by 1
-                    _scoreUpdated = true; // Set the flag to true to prevent multiple increments
+                    score += 1;
+                    _scoreUpdated = true; // voorkomen dat score meerdere keren wordt verhoogd
                 }
 
-                // Reset the flag when the bug is no longer past the pipe
+                // reset wanneer de bugpixel weer in de buurt van de buis komt
                 if (bugpixelPositie.X <= _buisPosities[0].X + _buis.Width)
                 {
                     _scoreUpdated = false;
                 }
             }
         }
+
+
     }
 }
