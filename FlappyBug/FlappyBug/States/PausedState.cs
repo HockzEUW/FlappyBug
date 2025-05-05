@@ -3,20 +3,16 @@ using FlappyBug.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-public class PausedState : AbstractState
+public class PausedState(Game1 spel, PlayingState playingState) : AbstractState(spel)
 {
-
-    private PlayingState _previousState;
-    public PausedState(Game1 spel, PlayingState playingState) : base(spel)
-    {
-        _previousState = playingState;
-    }
+    private Color _stringColor = new Color(0, 255, 255);
+    private PlayingState _previousState = playingState;
 
     public override void Draw(GameTime gameTime)
     {
-        spel.SpriteBatch.Draw(spel.Textures["StartBackground"], Vector2.Zero, Color.White);
-        spel.SpriteBatch.DrawString(spel.Font, "PAUSED", new Vector2(spel.Graphics.PreferredBackBufferWidth / 3, spel.Graphics.PreferredBackBufferHeight / 2), Color.DarkOrange);
-        spel.SpriteBatch.DrawString(spel.Font, "PRESS ENTER BUTTON TO CONTINUE", new Vector2(spel.Graphics.PreferredBackBufferWidth / 3, (spel.Graphics.PreferredBackBufferHeight / 2) + 50), Color.DarkOrange);
+        _previousState.Draw(gameTime);
+        spel.SpriteBatch.DrawString(spel.Font, "PAUSED", new Vector2(500, 300), _stringColor);
+        spel.SpriteBatch.DrawString(spel.Font, "PRESS \'ENTER\' TO CONTINUE", new Vector2(250, 350), _stringColor);
     }
 
     public override void Update(GameTime gameTime)

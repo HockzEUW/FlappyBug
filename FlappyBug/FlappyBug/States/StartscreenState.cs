@@ -4,25 +4,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-public class StartscreenState : AbstractState
+public class StartscreenState(Game1 spel) : AbstractState(spel)
 {
-    private Vector2 _startscreenPositie = Vector2.Zero;
     private float rotationAngle;
-    private Vector2 spritePosition;
     private Vector2 spriteOrigin;
-
-    public StartscreenState(Game1 spel) : base(spel)
-    {
-
-    }
 
     public override void Draw(GameTime gameTime)
     {
         spel.GraphicsDevice.Clear(Color.Black);
-        spel.SpriteBatch.Draw(spel.Textures["BugPixel"], new Vector2(spel.Graphics.PreferredBackBufferWidth / 2, spel.Graphics.PreferredBackBufferHeight / 2), null, Color.White, rotationAngle, spriteOrigin, 1.0f, SpriteEffects.None, 0f); ;
-        spel.SpriteBatch.DrawString(spel.Font, "FLAPPY BUG", new Vector2(spel.Graphics.PreferredBackBufferWidth / 3, spel.Graphics.PreferredBackBufferHeight / 2), Color.DarkOrange);
-        spel.SpriteBatch.DrawString(spel.Font, "PRESS ENTER BUTTON", new Vector2(spel.Graphics.PreferredBackBufferWidth / 3, (spel.Graphics.PreferredBackBufferHeight / 2) + 50), Color.DarkOrange);
-        spel.SpriteBatch.DrawString(spel.Font, "HIGHSCORE " + spel.HighScore.ToString(), new Vector2(spel.Graphics.PreferredBackBufferWidth / 3, (spel.Graphics.PreferredBackBufferHeight / 2) + 100), Color.DarkOrange);
+        spel.SpriteBatch.Draw(spel.Textures["StartBackground"], Vector2.Zero, Color.White);
+        spel.SpriteBatch.Draw(spel.Textures["BugPixel"], new Vector2(spel.Graphics.PreferredBackBufferWidth / 3 * 2, spel.Graphics.PreferredBackBufferHeight / 6), null, Color.White, rotationAngle, spriteOrigin, 1.0f, SpriteEffects.None, 0f); ;
+        spel.SpriteBatch.DrawString(spel.Font, spel.HighScore.ToString(), new Vector2(792, 510), Color.White);
     }
 
     public override void Update(GameTime gameTime)

@@ -68,7 +68,7 @@
 /processorParam:TextureFormat=Color
 /build:MotherboardBackground.png
 
-#begin StartBackground.jpg
+#begin StartBackground.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -78,5 +78,5 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:StartBackground.jpg
+/build:StartBackground.png
 
