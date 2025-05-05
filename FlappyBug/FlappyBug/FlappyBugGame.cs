@@ -5,16 +5,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace FlappyBug
 {
-    public class Game1 : Game
+    public class FlappyBugGame : Game
     {
         public GraphicsDeviceManager Graphics { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; }
         public SpriteFont Font { get; private set; }
         public Dictionary<string, Texture2D> Textures { get; set; }
-        private AbstractState _currentState;
         public int HighScore { get; set; } = 0;
+        private AbstractState _currentState;
 
-        public Game1()
+        public FlappyBugGame()
         {
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -52,8 +52,6 @@ namespace FlappyBug
         protected override void Update(GameTime gameTime)
         {
             _currentState.Update(gameTime);
-
-            base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -63,8 +61,6 @@ namespace FlappyBug
             SpriteBatch.Begin();
             _currentState.Draw(gameTime);
             SpriteBatch.End();
-
-            base.Draw(gameTime);
         }
     }
 }

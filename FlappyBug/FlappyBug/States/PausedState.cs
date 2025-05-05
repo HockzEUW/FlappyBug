@@ -3,9 +3,9 @@ using FlappyBug.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-public class PausedState(Game1 spel, PlayingState playingState) : AbstractState(spel)
+public class PausedState(FlappyBugGame spel, PlayingState playingState) : AbstractState(spel)
 {
-    private Color _stringColor = new Color(0, 255, 255);
+    private Color _stringColor = new(0, 255, 255);
     private PlayingState _previousState = playingState;
 
     public override void Draw(GameTime gameTime)
