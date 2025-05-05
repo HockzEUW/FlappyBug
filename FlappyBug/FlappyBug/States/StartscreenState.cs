@@ -3,11 +3,13 @@ using FlappyBug.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 public class StartscreenState(FlappyBugGame spel) : AbstractState(spel)
 {
     private float _rotationAngle;
     private Vector2 _spriteOrigin;
+    private bool _isSongPlaying = false;
 
     public override void Draw(GameTime gameTime)
     {
@@ -19,9 +21,16 @@ public class StartscreenState(FlappyBugGame spel) : AbstractState(spel)
 
     public override void Update(GameTime gameTime)
     {
+        if(!_isSongPlaying)
+        {
+            MediaPlayer.Play(spel.Song);
+            _isSongPlaying = true;
+        }
+
         if (Keyboard.GetState().IsKeyDown(Keys.Enter))
         {
             spel.ChangeState(new PlayingState(spel));
+            MediaPlayer.Stop();
         }
 
         DraaiBugPixel(gameTime);
@@ -29,9 +38,9 @@ public class StartscreenState(FlappyBugGame spel) : AbstractState(spel)
 
     private void DraaiBugPixel(GameTime gameTime)
     {
-        float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;        
+        float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
         float circle = MathHelper.Pi * 2;
-        
+
         _rotationAngle += elapsed;
         _rotationAngle %= circle;
         _spriteOrigin.X = spel.Textures["BugPixel"].Width / 2;
