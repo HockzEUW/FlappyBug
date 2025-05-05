@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using FlappyBug.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -8,39 +9,19 @@ namespace FlappyBug
 {
     public class Game1 : Game
     {
-        public GraphicsDeviceManager Graphics;
-        public SpriteBatch SpriteBatch;
-        public Dictionary<string, Texture2D> Textures { get; set; }
-        private List<Vector2> _buisPosities = new();
-        private Texture2D _bugpixel;
-        private Texture2D _motherboardBackground;
-        private Texture2D _buis;
-        private Vector2 achtergrondPositie = Vector2.Zero;
-        private Vector2 achtergrond2Positie = new Vector2(1792, 0);
-        private const int bewegingsSnelheid = 5;
-        private Vector2 bugpixelPositie = Vector2.Zero;
-        private float verticalVelocity = 0f;  // Snelheid in de verticale richting
-        private const float gravity = 0.45f;  // Zwaartekracht kracht
-        private const float springHoogte = -8f;  // De kracht van het springen
-        private bool isSpatiebarIngedrukt = false;
-        private TimeSpan _momentLaatsteBuisAangemaakt;
-        private readonly int uitersteYPositieWaarde;
-
-        private TimeSpan tijdVerstreken = TimeSpan.Zero; //lokale timer die alleen telt wanneer game niet gepauzeerd is
-
-        private int score = 0;
-        private bool _scoreUpdated = false;
-
-        private bool _isGepauzeerd = false;
-
+        public GraphicsDeviceManager Graphics { get; private set; }
+        public SpriteBatch SpriteBatch { get; private set; }
         public SpriteFont Font { get; private set; }
+        public Dictionary<string, Texture2D> Textures { get; set; }
+        private AbstractState _currentState;
+        public int HighScore { get; set; } = 0;
 
         public Game1()
         {
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            uitersteYPositieWaarde = Graphics.PreferredBackBufferHeight / 4;
+            _currentState = new StartscreenState(this);
         }
 
         protected override void Initialize()
@@ -48,188 +29,44 @@ namespace FlappyBug
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 720;
             Graphics.ApplyChanges();
+
             base.Initialize();
+        }
+
+        public void ChangeState(AbstractState newState)
+        {
+            _currentState = newState;
         }
 
         protected override void LoadContent()
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            _bugpixel = Content.Load<Texture2D>("BugPixel");
-            _motherboardBackground = Content.Load<Texture2D>("MotherboardBackground");
-            _buis = Content.Load<Texture2D>("BuisTogether");
-            Font = Content.Load<SpriteFont>("File");
+            Font = Content.Load<SpriteFont>("FlappyFont");
+            Textures = new() {
+                { "StartBackground", Content.Load<Texture2D>("StartBackground") },
+                { "BugPixel", Content.Load<Texture2D>("BugPixel") },
+                { "MotherboardBackground", Content.Load<Texture2D>("MotherboardBackground") },
+                { "BuisTogether", Content.Load<Texture2D>("BuisTogether") },
+                { "BugDead", Content.Load<Texture2D>("BugDead") }
+            };
         }
 
         protected override void Update(GameTime gameTime)
         {
-            if (!_isGepauzeerd)
-            {
-                if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-                {
-                    _isGepauzeerd = true; // pauzeer
-                }
-                tijdVerstreken += gameTime.ElapsedGameTime;
+            _currentState.Update(gameTime);
 
-                if (bugpixelPositie == Vector2.Zero)
-            {
-                bugpixelPositie = new Vector2(Graphics.PreferredBackBufferWidth / 4, Graphics.PreferredBackBufferHeight / 2 - _bugpixel.Height);
-            }
-
-            achtergrondPositie.X -= bewegingsSnelheid;
-
-            achtergrond2Positie.X -= bewegingsSnelheid;
-
-            if (achtergrondPositie.X < -_motherboardBackground.Width)
-            {
-                achtergrondPositie.X = _motherboardBackground.Width;
-            }
-
-            if (achtergrond2Positie.X < -_motherboardBackground.Width)
-            {
-                achtergrond2Positie.X = _motherboardBackground.Width;
-            }
-
-            // Controleer of we springen als de spatiebalk ingedrukt is
-            if (Keyboard.GetState().IsKeyDown(Keys.Space) && !isSpatiebarIngedrukt && (bugpixelPositie.Y > _bugpixel.Height))
-            {
-                // Als de bugpixel op de grond is, begin met springen
-                if (bugpixelPositie.Y >= Graphics.PreferredBackBufferHeight - _bugpixel.Height)
-                {
-                    verticalVelocity = springHoogte; // Zet de verticale snelheid naar de negatieve waarde van jumpStrength
-                }
-                else
-                {
-                    // Als we niet op de grond zijn, blijven we in de lucht en blijven we 'springkracht' toevoegen zolang de spatie ingedrukt blijft
-                    verticalVelocity = springHoogte; // Blijf springen zolang de toets ingedrukt wordt
-                }
-                isSpatiebarIngedrukt = true;
-            }
-
-            if (Keyboard.GetState().IsKeyUp(Keys.Space) && isSpatiebarIngedrukt)
-            {
-                isSpatiebarIngedrukt = false;
-            }
-
-            // Pas de zwaartekracht toe, dit gebeurt alleen als we niet op de grond zijn
-            if (bugpixelPositie.Y < Graphics.PreferredBackBufferHeight - _bugpixel.Height)
-            {
-                verticalVelocity += gravity;
-            }
-
-            // Verplaats de bugpixel op basis van de verticale snelheid
-            bugpixelPositie.Y += verticalVelocity;
-
-            // Zorg ervoor dat de bugpixel niet door de onderkant van het scherm valt
-            if (bugpixelPositie.Y > Graphics.PreferredBackBufferHeight - _bugpixel.Height)
-            {
-                bugpixelPositie.Y = Graphics.PreferredBackBufferHeight - _bugpixel.Height;
-                verticalVelocity = 0f;  // Stop met vallen als de bugpixel de onderkant bereikt
-            }
-
-                BuizenController(gameTime);
-
-            }
-            else
-            {
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter))
-                {
-                    _isGepauzeerd = false; // continue
-                }
-            }
-            
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            
             GraphicsDevice.Clear(Color.Black);
-            SpriteBatch.Begin();
-            SpriteBatch.Draw(_motherboardBackground, achtergrond2Positie, Color.White);
-            SpriteBatch.Draw(_motherboardBackground, achtergrondPositie, Color.White);
-            SpriteBatch.Draw(_bugpixel, bugpixelPositie, Color.White);
 
-            foreach (var buisPositie in _buisPosities)
-            {
-                SpriteBatch.Draw(_buis, buisPositie, Color.White);
-            }
-            SpriteBatch.DrawString(Font, score.ToString(), Vector2.Zero, Color.Red);
+            SpriteBatch.Begin();
+            _currentState.Draw(gameTime);
             SpriteBatch.End();
+
             base.Draw(gameTime);
         }
-
-
-        private void BuizenController(GameTime gt)
-        {
-            if ((tijdVerstreken -_momentLaatsteBuisAangemaakt).TotalSeconds > 1.5)
-            {
-                MaakBuizen(gt);
-            }
-            VerplaatsBuizen();
-            VerwerkBotsing();
-            VerwerkScore();
-            _buisPosities.RemoveAll(b => b.X < -_buis.Width);
-        }
-
-        private void MaakBuizen(GameTime gt)
-        {
-            Random rnd = new();
-            Vector2 nieuweBuisPositie = new Vector2(
-                Graphics.PreferredBackBufferWidth,
-                (-_buis.Height / 2) + (Graphics.PreferredBackBufferHeight / 2) + rnd.Next(-uitersteYPositieWaarde, uitersteYPositieWaarde) //buis komt eerst midden op het scherm en verplaatst zich dan naar boven of onder
-            );
-            _buisPosities.Add(nieuweBuisPositie);
-            _momentLaatsteBuisAangemaakt = tijdVerstreken;
-        }
-        private void VerplaatsBuizen()
-        {
-            for (int i = 0; i < _buisPosities.Count; i++)
-            {
-                _buisPosities[i] = _buisPosities[i] with { X = _buisPosities[i].X - bewegingsSnelheid };
-            }
-        }
-        private void VerwerkBotsing()
-        {
-            
-            Rectangle bugRechthoek = new(
-                (int)bugpixelPositie.X, (int)bugpixelPositie.Y,
-                _bugpixel.Width, _bugpixel.Height
-            );
-
-            for (int i = 0; i < _buisPosities.Count; i++)
-            {
-                Rectangle buisRechthoekBovenkant = new(
-                    (int)_buisPosities[i].X, (int)_buisPosities[i].Y,
-                    _buis.Width, _buis.Height / 2 - 90
-                );
-                Rectangle buisRechthoekOnderkant = new(
-                    (int)_buisPosities[i].X, (int)_buisPosities[i].Y + _buis.Height / 2 + 90,
-                    _buis.Width, _buis.Height
-                );
-                if (bugRechthoek.Intersects(buisRechthoekBovenkant) || bugRechthoek.Intersects(buisRechthoekOnderkant))
-                {
-                    Exit();
-                }
-            }
-        }
-        private void VerwerkScore()
-        {
-            if (_buisPosities.Count > 0)
-            {
-                if (bugpixelPositie.X > _buisPosities[0].X + _buis.Width && !_scoreUpdated)
-                {
-                    score += 1;
-                    _scoreUpdated = true; // voorkomen dat score meerdere keren wordt verhoogd
-                }
-
-                // reset wanneer de bugpixel weer in de buurt van de buis komt
-                if (bugpixelPositie.X <= _buisPosities[0].X + _buis.Width)
-                {
-                    _scoreUpdated = false;
-                }
-            }
-        }
-
-
     }
 }
