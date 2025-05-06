@@ -3,32 +3,33 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace FlappyBug.States;
 
 public class PlayingState : AbstractState
 {
-    private List<Vector2> _buisPosities = new();
-    private readonly Texture2D _bugpixel, _motherboardBackground, _buis;
+    private List<Vector2> _ramstickPosities = new();
+    private readonly Texture2D _bugpixel, _motherboardBackground, _ramstick;
     private Vector2 _achtergrondPositie, _achtergrond2Positie, _bugpixelPositie;
     private const int _bewegingsSnelheid = 5;
-    private float _verticalVelocity = 0f;  // Snelheid in de verticale richting
-    private const float _gravity = 0.45f;  // Zwaartekracht kracht
+    private float _verticaleSnelheid = 0f;  // Snelheid in de verticale richting
+    private const float _zwaartekracht = 0.45f;  // Zwaartekracht kracht
     private const float _springHoogte = -8f;  // De kracht van het springen
     private bool _isSpatiebarIngedrukt = false;
-    private TimeSpan _momentLaatsteBuisAangemaakt;
-    private readonly int _uitersteYPositieWaarde;
+    private TimeSpan _momentLaatsteRamstickAangemaakt;
     private TimeSpan _tijdVerstreken = TimeSpan.Zero; //lokale timer die alleen telt wanneer game niet gepauzeerd is
     private int _score = 0;
     private bool _scoreUpdated = false;
     private bool _isDood = false;
+    private bool _isGeluidseffectActief = false;
     private TimeSpan _doodTimer = TimeSpan.Zero; // timer voor de valanimatie
+    private bool _isSongPlaying = false;
     private readonly TimeSpan _doodAnimatieDuur = TimeSpan.FromSeconds(1); // duur van de valanimatie
 
     public PlayingState(FlappyBugGame spel) : base(spel)
     {
-        _uitersteYPositieWaarde = spel.Graphics.PreferredBackBufferHeight / 4;
-        _buis = spel.Textures["BuisTogether"];
+        _ramstick = spel.Textures["RamstickTogether"];
         _bugpixel = spel.Textures["BugPixel"];
         _motherboardBackground = spel.Textures["MotherboardBackground"];
         _achtergrond2Positie = new Vector2(_motherboardBackground.Width, 0);
@@ -43,9 +44,9 @@ public class PlayingState : AbstractState
         spel.SpriteBatch.Draw(_motherboardBackground, _achtergrondPositie, Color.White);
 
 
-        foreach (var buisPositie in _buisPosities)
+        foreach (var ramstickPositie in _ramstickPosities)
         {
-            spel.SpriteBatch.Draw(_buis, buisPositie, Color.White);
+            spel.SpriteBatch.Draw(_ramstick, ramstickPositie, Color.White);
         }
         spel.SpriteBatch.Draw(_bugpixel, _bugpixelPositie, Color.White);
         spel.SpriteBatch.DrawString(spel.Font, _score.ToString(), new Vector2(spel.Graphics.PreferredBackBufferWidth / 2, 50), Color.White);
@@ -55,8 +56,12 @@ public class PlayingState : AbstractState
     {
         if (_isDood) //sterf animatie
         {
-            _verticalVelocity += _gravity; // versnel de val door zwaartekracht
-            _bugpixelPositie.Y += _verticalVelocity;
+            if(!_isGeluidseffectActief){
+                spel.ErrorSound.Play();
+                _isGeluidseffectActief = true;
+            }
+            _verticaleSnelheid += _zwaartekracht; // versnel de val door zwaartekracht
+            _bugpixelPositie.Y += _verticaleSnelheid;
 
             // tel de tijd voor de valanimatie
             _doodTimer += gameTime.ElapsedGameTime;
@@ -75,10 +80,15 @@ public class PlayingState : AbstractState
         }
         _tijdVerstreken += gameTime.ElapsedGameTime;
 
+
+        if(!_isSongPlaying)
+        {
+            MediaPlayer.Play(spel.Songs["PlayingSong"]);
+            _isSongPlaying = true;
+        }
         IntroduceerZwaarteKracht(); // zwaartekracht en springen
         BeweegAchtergrond();
         BuizenController(gameTime);
-
     }
 
     public void BeweegAchtergrond()
@@ -104,27 +114,27 @@ public class PlayingState : AbstractState
         VerplaatsBuizen();
         VerwerkBotsing();
         VerwerkScore();
-        _buisPosities.RemoveAll(b => b.X < -_buis.Width);
+        _ramstickPosities.RemoveAll(b => b.X < -_ramstick.Width);
     }
 
     private void MaakBuizen(GameTime gt)
     {
-        if ((_tijdVerstreken - _momentLaatsteBuisAangemaakt).TotalSeconds > 1.5)
+        if ((_tijdVerstreken - _momentLaatsteRamstickAangemaakt).TotalSeconds > 1.5)
         {
             Random rnd = new();
-            Vector2 nieuweBuisPositie = new Vector2(
+            Vector2 nieuweRamstickPositie = new Vector2(
                 spel.Graphics.PreferredBackBufferWidth,
-                (-_buis.Height / 2) + (spel.Graphics.PreferredBackBufferHeight / 2) + rnd.Next(-_uitersteYPositieWaarde, _uitersteYPositieWaarde) //buis komt eerst midden op het scherm en verplaatst zich dan naar boven of onder
+                (-_ramstick.Height / 2) + (spel.Graphics.PreferredBackBufferHeight / 2) + rnd.Next(-spel.Graphics.PreferredBackBufferHeight / 4, spel.Graphics.PreferredBackBufferHeight / 4) //ramstick komt eerst midden op het scherm en verplaatst zich dan naar boven of onder
             );
-            _buisPosities.Add(nieuweBuisPositie);
-            _momentLaatsteBuisAangemaakt = _tijdVerstreken;
+            _ramstickPosities.Add(nieuweRamstickPositie);
+            _momentLaatsteRamstickAangemaakt = _tijdVerstreken;
         }
     }
     private void VerplaatsBuizen()
     {
-        for (int i = 0; i < _buisPosities.Count; i++)
+        for (int i = 0; i < _ramstickPosities.Count; i++)
         {
-            _buisPosities[i] = _buisPosities[i] with { X = _buisPosities[i].X - _bewegingsSnelheid };
+            _ramstickPosities[i] = _ramstickPosities[i] with { X = _ramstickPosities[i].X - _bewegingsSnelheid };
         }
     }
     private void VerwerkBotsing()
@@ -134,52 +144,46 @@ public class PlayingState : AbstractState
             _bugpixel.Width, _bugpixel.Height
         );
 
-        for (int i = 0; i < _buisPosities.Count; i++)
+        for (int i = 0; i < _ramstickPosities.Count; i++)
         {
-            Rectangle buisRechthoekBovenkant = new(
-                (int)_buisPosities[i].X, (int)_buisPosities[i].Y,
-                _buis.Width, _buis.Height / 2 - 90
+            Rectangle ramstickRechthoekBovenkant = new(
+                (int)_ramstickPosities[i].X, (int)_ramstickPosities[i].Y,
+                _ramstick.Width, _ramstick.Height / 2 - 90
             );
-            Rectangle buisRechthoekOnderkant = new(
-                (int)_buisPosities[i].X, (int)_buisPosities[i].Y + _buis.Height / 2 + 90,
-                _buis.Width, _buis.Height
+            Rectangle ramstickRechthoekOnderkant = new(
+                (int)_ramstickPosities[i].X, (int)_ramstickPosities[i].Y + _ramstick.Height / 2 + 90,
+                _ramstick.Width, _ramstick.Height
             );
-            if (bugRechthoek.Intersects(buisRechthoekBovenkant) || bugRechthoek.Intersects(buisRechthoekOnderkant))
+            if (bugRechthoek.Intersects(ramstickRechthoekBovenkant) || bugRechthoek.Intersects(ramstickRechthoekOnderkant))
             {
                 if (_score > spel.HighScore)
                 {
                     spel.HighScore = _score;
                 }
 
-                // activeer de dood toestand
+                MediaPlayer.Stop();
                 _isDood = true;
-                _verticalVelocity = 0f; // reset de verticale snelheid
-                _doodTimer = TimeSpan.Zero; // reset de dood timer
             }
         }
     }
     private void VerwerkScore()
     {
-        if (_buisPosities.Count > 0)
+        if (_ramstickPosities.Count > 0)
         {
-            if (_bugpixelPositie.X > _buisPosities[0].X + _buis.Width && !_scoreUpdated)
+            if (_bugpixelPositie.X > _ramstickPosities[0].X + _ramstick.Width && !_scoreUpdated)
             {
                 _score += 1;
                 _scoreUpdated = true; // voorkomen dat score meerdere keren wordt verhoogd
             }
 
-            // reset wanneer de bugpixel weer in de buurt van de buis komt
-            if (_bugpixelPositie.X <= _buisPosities[0].X + _buis.Width)
+            // reset wanneer de bugpixel weer in de buurt van de ramstick komt
+            if (_bugpixelPositie.X <= _ramstickPosities[0].X + _ramstick.Width)
             {
                 _scoreUpdated = false;
             }
         }
     }
 
-    public void VoerSterfAnimatieUit()
-    {
-
-    }
     public void IntroduceerZwaarteKracht()
     {
         // controleer of we springen als de spatiebalk ingedrukt is
@@ -188,12 +192,12 @@ public class PlayingState : AbstractState
             // als de bugpixel op de grond is, begin met springen
             if (_bugpixelPositie.Y >= spel.Graphics.PreferredBackBufferHeight - _bugpixel.Height)
             {
-                _verticalVelocity = _springHoogte; // Zet de verticale snelheid naar de negatieve waarde van jumpStrength
+                _verticaleSnelheid = _springHoogte; // Zet de verticale snelheid naar de negatieve waarde van jumpStrength
             }
             else
             {
-                // als we niet op de grond zijn, blijven we in de lucht en blijven we 'springkracht' toevoegen zolang de spatie ingedrukt blijft
-                _verticalVelocity = _springHoogte; // blijf springen zolang de toets ingedrukt wordt
+                // als we niet op de grond zijn, springen we in de lucht en voegen we 'springkracht' toe 
+                _verticaleSnelheid = _springHoogte; // blijf springen zolang de toets ingedrukt wordt
             }
             _isSpatiebarIngedrukt = true;
         }
@@ -206,17 +210,17 @@ public class PlayingState : AbstractState
         // pas de zwaartekracht toe, dit gebeurt alleen als we niet op de grond zijn
         if (_bugpixelPositie.Y < spel.Graphics.PreferredBackBufferHeight - _bugpixel.Height)
         {
-            _verticalVelocity += _gravity;
+            _verticaleSnelheid += _zwaartekracht;
         }
 
         // verplaats de bugpixel op basis van de verticale snelheid
-        _bugpixelPositie.Y += _verticalVelocity;
+        _bugpixelPositie.Y += _verticaleSnelheid;
 
         // zorg ervoor dat de bugpixel niet door de onderkant van het scherm valt
         if (_bugpixelPositie.Y > spel.Graphics.PreferredBackBufferHeight - _bugpixel.Height)
         {
             _bugpixelPositie.Y = spel.Graphics.PreferredBackBufferHeight - _bugpixel.Height;
-            _verticalVelocity = 0f;  // stop met vallen als de bugpixel de onderkant bereikt
+            _verticaleSnelheid = 0f;  // stop met vallen als de bugpixel de onderkant bereikt
         }
 
     }

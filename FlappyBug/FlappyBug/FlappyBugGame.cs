@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FlappyBug.States;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 
@@ -11,8 +12,9 @@ namespace FlappyBug
         public GraphicsDeviceManager Graphics { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; }
         public SpriteFont Font { get; private set; }
-        public Song Song { get; private set; }
+        public SoundEffect ErrorSound { get; private set; }
         public Dictionary<string, Texture2D> Textures { get; set; }
+        public Dictionary<string, Song> Songs { get; set; }
         public int HighScore { get; set; } = 0;
         private AbstractState _currentState;
 
@@ -42,12 +44,17 @@ namespace FlappyBug
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             Font = Content.Load<SpriteFont>("FlappyFont");
-            Song = Content.Load<Song>("StartSong");
+            ErrorSound = Content.Load<SoundEffect>("Errorsound");
+            Songs = new() {
+                { "GameoverSong", Content.Load<Song>("GameoverSong") },
+                { "PlayingSong", Content.Load<Song>("PlayingSong") },
+                { "StartSong", Content.Load<Song>("StartSong") },
+            };
             Textures = new() {
                 { "StartBackground", Content.Load<Texture2D>("StartBackground") },
                 { "BugPixel", Content.Load<Texture2D>("BugPixel") },
                 { "MotherboardBackground", Content.Load<Texture2D>("MotherboardBackground") },
-                { "BuisTogether", Content.Load<Texture2D>("BuisTogether") },
+                { "RamstickTogether", Content.Load<Texture2D>("RamstickTogether") },
                 { "BugDead", Content.Load<Texture2D>("BugDead") }
             };
         }

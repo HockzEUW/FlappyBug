@@ -37,17 +37,11 @@
 /processorParam:TextureFormat=Color
 /build:BugPixel.png
 
-#begin BuisTogether.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:BuisTogether.png
+#begin ErrorSound.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:ErrorSound.mp3
 
 #begin FlappyFont.spritefont
 /importer:FontDescriptionImporter
@@ -55,6 +49,12 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:FlappyFont.spritefont
+
+#begin GameoverSong.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:GameoverSong.mp3
 
 #begin MotherboardBackground.png
 /importer:TextureImporter
@@ -67,6 +67,24 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:MotherboardBackground.png
+
+#begin PlayingSong.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:PlayingSong.mp3
+
+#begin RamstickTogether.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:RamstickTogether.png
 
 #begin StartBackground.png
 /importer:TextureImporter
