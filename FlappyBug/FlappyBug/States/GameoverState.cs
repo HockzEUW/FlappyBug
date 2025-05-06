@@ -4,13 +4,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
-public class GameoverState(FlappyBugGame spel) : AbstractState(spel)
+public class GameoverState(FlappyBugGame spel, int score) : AbstractState(spel)
 {
     private bool _isMuziekActief = false;
     public override void Draw(GameTime gameTime)
     {
         spel.SpriteBatch.Draw(spel.Textures["BugDead"], Vector2.Zero, Color.White);
-        spel.SpriteBatch.DrawString(spel.Font, spel.HighScore.ToString(), new Vector2(spel.Graphics.PreferredBackBufferWidth / 2, 380), Color.White); //highscore
+        spel.SpriteBatch.DrawString(spel.Font, score.ToString(), new Vector2(825, 333), Color.White); //current score
+        spel.SpriteBatch.DrawString(spel.Font, spel.HighScore.ToString(), new Vector2(825, 388), Color.White); //highscore
     }
 
     public override void Update(GameTime gameTime)
