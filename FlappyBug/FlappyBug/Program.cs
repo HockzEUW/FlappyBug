@@ -1,2 +1,2 @@
-﻿using var game = new FlappyBug.Game1();
+﻿using var game = new FlappyBug.FlappyBugGame();
 game.Run();
