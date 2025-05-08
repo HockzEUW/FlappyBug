@@ -88,7 +88,7 @@ public class PlayingState : AbstractState
         }
         IntroduceerZwaarteKracht(); // zwaartekracht en springen
         BeweegAchtergrond();
-        BuizenController(gameTime);
+        RamstickController(gameTime);
     }
 
     public void BeweegAchtergrond()
@@ -107,17 +107,17 @@ public class PlayingState : AbstractState
             _achtergrond2Positie.X = _motherboardBackground.Width;
         }
     }
-    private void BuizenController(GameTime gt)
+    private void RamstickController(GameTime gt)
     {
 
-        MaakBuizen(gt);
-        VerplaatsBuizen();
+        MaakRamsticks(gt);
+        VerplaatsRamsticks();
         VerwerkBotsing();
         VerwerkScore();
         _ramstickPosities.RemoveAll(b => b.X < -_ramstick.Width);
     }
 
-    private void MaakBuizen(GameTime gt)
+    private void MaakRamsticks(GameTime gt)
     {
         if ((_tijdVerstreken - _momentLaatsteRamstickAangemaakt).TotalSeconds > 1.5)
         {
@@ -130,7 +130,7 @@ public class PlayingState : AbstractState
             _momentLaatsteRamstickAangemaakt = _tijdVerstreken;
         }
     }
-    private void VerplaatsBuizen()
+    private void VerplaatsRamsticks()
     {
         for (int i = 0; i < _ramstickPosities.Count; i++)
         {
