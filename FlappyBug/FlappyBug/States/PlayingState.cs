@@ -68,7 +68,7 @@ public class PlayingState : AbstractState
 
             if (_doodTimer >= _doodAnimatieDuur)
             {
-                spel.ChangeState(new GameoverState(spel));
+                spel.ChangeState(new GameoverState(spel, _score));
             }
 
             return; // stop verdere updates als de speler dood is
